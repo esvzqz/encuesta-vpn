@@ -330,11 +330,21 @@
             message.style.display = 'none';
 
             try {
-                const response = await fetch(APPS_SCRIPT_URL, {
+                // Primero verificar si ya respondió (vía GET)
+                const checkResponse = await fetch(APPS_SCRIPT_URL + '?action=check&empleado=' + encodeURIComponent(empleado));
+                const checkData = await checkResponse.json();
+
+                if (checkData.yaRespondio) {
+                    showMessage('⚠️ Ya habías respondido esta encuesta anteriormente (respondiste: ' + checkData.vpn + '). Tu respuesta ya está registrada.', 'warning');
+                    return;
+                }
+
+                // Si no ha respondido, enviar respuesta
+                await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    redirect: 'follow',
+                    mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'text/plain',
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         empleado: empleado,
@@ -343,18 +353,8 @@
                     })
                 });
 
-                const result = await response.json();
-
-                if (result.success) {
-                    if (result.duplicado) {
-                        showMessage('⚠️ Ya habías respondido esta encuesta anteriormente. Tu respuesta ya está registrada.', 'warning');
-                    } else {
-                        showMessage('✅ ¡Encuesta respondida exitosamente! Gracias por tu participación.', 'success');
-                        form.reset();
-                    }
-                } else {
-                    showMessage('❌ ' + (result.error || 'Error al procesar. Intenta de nuevo.'), 'error');
-                }
+                showMessage('✅ ¡Encuesta respondida exitosamente! Gracias por tu participación.', 'success');
+                form.reset();
 
             } catch (error) {
                 showMessage('❌ Error al enviar. Verifica tu conexión e intenta de nuevo.', 'error');
