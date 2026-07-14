@@ -190,6 +190,13 @@
             display: block;
         }
 
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+            display: block;
+        }
+
         .message.error {
             background: #f8d7da;
             color: #721c24;
@@ -325,9 +332,9 @@
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    redirect: 'follow',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain',
                     },
                     body: JSON.stringify({
                         empleado: empleado,
@@ -336,9 +343,18 @@
                     })
                 });
 
-                // Con no-cors no podemos leer la respuesta, pero si no hay error de red, asumimos éxito
-                showMessage('✅ ¡Respuesta enviada exitosamente! Gracias.', 'success');
-                form.reset();
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.duplicado) {
+                        showMessage('⚠️ Ya habías respondido esta encuesta anteriormente. Tu respuesta ya está registrada.', 'warning');
+                    } else {
+                        showMessage('✅ ¡Encuesta respondida exitosamente! Gracias por tu participación.', 'success');
+                        form.reset();
+                    }
+                } else {
+                    showMessage('❌ ' + (result.error || 'Error al procesar. Intenta de nuevo.'), 'error');
+                }
 
             } catch (error) {
                 showMessage('❌ Error al enviar. Verifica tu conexión e intenta de nuevo.', 'error');
