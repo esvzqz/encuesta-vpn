@@ -339,19 +339,15 @@
                     return;
                 }
 
-                // Si no ha respondido, enviar respuesta
-                await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        empleado: empleado,
-                        vpn: vpnSeleccion.value,
-                        timestamp: new Date().toISOString()
-                    })
+                // Si no ha respondido, enviar respuesta usando imagen (evita CORS)
+                const img = new Image();
+                const params = new URLSearchParams({
+                    action: 'guardar',
+                    empleado: empleado,
+                    vpn: vpnSeleccion.value,
+                    timestamp: new Date().toISOString()
                 });
+                img.src = APPS_SCRIPT_URL + '?' + params.toString();
 
                 showMessage('✅ ¡Encuesta respondida exitosamente! Gracias por tu participación.', 'success');
                 form.reset();
