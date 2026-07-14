@@ -188,6 +188,11 @@
             color: #4a235a;
         }
 
+        .badge-ambas {
+            background: #d5f5e3;
+            color: #1e8449;
+        }
+
         .badge-sinvpn {
             background: #fdebd0;
             color: #7e5109;
@@ -297,6 +302,10 @@
             <div class="number" id="statVpn2">-</div>
             <div class="label">GlobalProtect</div>
         </div>
+        <div class="stat-card" style="border-left: 4px solid #1e8449;">
+            <div class="number" id="statAmbas" style="color: #1e8449;">-</div>
+            <div class="label">Ambas</div>
+        </div>
         <div class="stat-card sinvpn">
             <div class="number" id="statSinVpn">-</div>
             <div class="label">Sin VPN</div>
@@ -320,6 +329,7 @@
         <button class="filter-btn" data-filter="pendiente">⏳ Pendientes</button>
         <button class="filter-btn" data-filter="CISCO_ANYCONNECT">🔵 Cisco AnyConnect</button>
         <button class="filter-btn" data-filter="GLOBALPROTECT">🟣 GlobalProtect</button>
+        <button class="filter-btn" data-filter="AMBAS">🟢 Ambas</button>
         <button class="filter-btn" data-filter="SIN_VPN">🟡 Sin VPN</button>
     </div>
 
@@ -402,6 +412,7 @@
             const pendientes = data.pendientes || total - respondidos;
             const vpn1 = data.vpn1 || allData.filter(e => e.vpn === 'CISCO_ANYCONNECT').length;
             const vpn2 = data.vpn2 || allData.filter(e => e.vpn === 'GLOBALPROTECT').length;
+            const ambas = data.ambas || allData.filter(e => e.vpn === 'AMBAS').length;
             const sinVpn = data.sinVpn || allData.filter(e => e.vpn === 'SIN_VPN').length;
 
             document.getElementById('statTotal').textContent = total;
@@ -409,6 +420,7 @@
             document.getElementById('statPendiente').textContent = pendientes;
             document.getElementById('statVpn1').textContent = vpn1;
             document.getElementById('statVpn2').textContent = vpn2;
+            document.getElementById('statAmbas').textContent = ambas;
             document.getElementById('statSinVpn').textContent = sinVpn;
 
             // Barra de progreso
@@ -432,6 +444,7 @@
                 let vpnBadge = '-';
                 if (emp.vpn === 'CISCO_ANYCONNECT') vpnBadge = '<span class="badge badge-vpn1">Cisco AnyConnect</span>';
                 else if (emp.vpn === 'GLOBALPROTECT') vpnBadge = '<span class="badge badge-vpn2">GlobalProtect</span>';
+                else if (emp.vpn === 'AMBAS') vpnBadge = '<span class="badge badge-ambas">Ambas</span>';
                 else if (emp.vpn === 'SIN_VPN') vpnBadge = '<span class="badge badge-sinvpn">Sin VPN</span>';
 
                 tr.innerHTML = `

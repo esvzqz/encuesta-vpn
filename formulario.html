@@ -258,7 +258,7 @@
                 <div class="vpn-options">
                     <!-- VPN Opción 1: Cisco AnyConnect -->
                     <label class="vpn-option">
-                        <input type="radio" name="vpn" value="CISCO_ANYCONNECT" required>
+                        <input type="radio" name="vpn" value="CISCO_ANYCONNECT">
                         <div class="vpn-card">
                             <img src="img/vpn1.png" alt="Cisco AnyConnect">
                             <div class="vpn-name">Cisco AnyConnect</div>
@@ -274,8 +274,19 @@
                         </div>
                     </label>
 
+                    <!-- Ambas VPN -->
+                    <label class="vpn-option">
+                        <input type="radio" name="vpn" value="AMBAS">
+                        <div class="vpn-card">
+                            <div class="no-vpn-card-content">
+                                <span class="no-vpn-icon">🔀</span>
+                                <div class="vpn-name">Ambas</div>
+                            </div>
+                        </div>
+                    </label>
+
                     <!-- Sin VPN -->
-                    <label class="vpn-option no-vpn-option">
+                    <label class="vpn-option">
                         <input type="radio" name="vpn" value="SIN_VPN">
                         <div class="vpn-card">
                             <div class="no-vpn-card-content">
