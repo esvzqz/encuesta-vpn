@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta VPN - Área</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5986 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e3a5f;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #2d5986;
+        }
+
+        .vpn-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .vpn-option {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .vpn-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .vpn-card {
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            background: #f9f9f9;
+        }
+
+        .vpn-option input[type="radio"]:checked + .vpn-card {
+            border-color: #2d5986;
+            background: #e8f0fe;
+            transform: scale(1.02);
+        }
+
+        .vpn-card:hover {
+            border-color: #90b4d6;
+            background: #f0f5fa;
+        }
+
+        .vpn-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .vpn-card .vpn-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .no-vpn-option {
+            grid-column: 1 / -1;
+        }
+
+        .no-vpn-option .vpn-card {
+            background: #fff5f5;
+            border-color: #ffcccc;
+        }
+
+        .no-vpn-option input[type="radio"]:checked + .vpn-card {
+            border-color: #e74c3c;
+            background: #fde8e8;
+        }
+
+        .no-vpn-card-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .no-vpn-icon {
+            font-size: 2rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1e3a5f, #2d5986);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 58, 95, 0.4);
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2d5986;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+            .vpn-options {
+                grid-template-columns: 1fr;
+            }
+            .no-vpn-option {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Encuesta VPN</h1>
+        <p class="subtitle">Identifica qué tipo de VPN usas para conectarte</p>
+
+        <form id="vpnForm">
+            <div class="form-group">
+                <label for="empleado">Número de empleado:</label>
+                <input type="text" id="empleado" placeholder="Ej: 12345" required>
+            </div>
+
+            <div class="form-group">
+                <label>¿Con qué VPN te conectas?</label>
+                <div class="vpn-options">
+                    <!-- VPN Opción 1: Cisco AnyConnect -->
+                    <label class="vpn-option">
+                        <input type="radio" name="vpn" value="CISCO_ANYCONNECT" required>
+                        <div class="vpn-card">
+                            <img src="img/vpn1.png" alt="Cisco AnyConnect">
+                            <div class="vpn-name">Cisco AnyConnect</div>
+                        </div>
+                    </label>
+
+                    <!-- VPN Opción 2: GlobalProtect -->
+                    <label class="vpn-option">
+                        <input type="radio" name="vpn" value="GLOBALPROTECT">
+                        <div class="vpn-card">
+                            <img src="img/vpn2.png" alt="GlobalProtect">
+                            <div class="vpn-name">GlobalProtect</div>
+                        </div>
+                    </label>
+
+                    <!-- Sin VPN -->
+                    <label class="vpn-option no-vpn-option">
+                        <input type="radio" name="vpn" value="SIN_VPN">
+                        <div class="vpn-card">
+                            <div class="no-vpn-card-content">
+                                <span class="no-vpn-icon">🚫</span>
+                                <div class="vpn-name">No tengo VPN</div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSubmit">Enviar respuesta</button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Enviando...</p>
+            </div>
+
+            <div class="message" id="message"></div>
+        </form>
+    </div>
+
+    <script>
+        // ⚠️ REEMPLAZA ESTA URL con la URL de tu Google Apps Script desplegado como Web App
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6qGW7Jz48gIR7_VveRRaDT2ByD1lJQLZ1ZbZLaK5rIJEB0KN0b2_PG2aD3x8INgw/exec';
+
+        const form = document.getElementById('vpnForm');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const loading = document.getElementById('loading');
+        const message = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const empleado = document.getElementById('empleado').value.trim();
+            const vpnSeleccion = document.querySelector('input[name="vpn"]:checked');
+
+            if (!empleado) {
+                showMessage('Por favor ingresa tu número de empleado.', 'error');
+                return;
+            }
+
+            if (!vpnSeleccion) {
+                showMessage('Por favor selecciona una opción de VPN.', 'error');
+                return;
+            }
+
+            // Deshabilitar botón y mostrar loading
+            btnSubmit.disabled = true;
+            loading.classList.add('active');
+            message.className = 'message';
+            message.style.display = 'none';
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        empleado: empleado,
+                        vpn: vpnSeleccion.value,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                // Con no-cors no podemos leer la respuesta, pero si no hay error de red, asumimos éxito
+                showMessage('✅ ¡Respuesta enviada exitosamente! Gracias.', 'success');
+                form.reset();
+
+            } catch (error) {
+                showMessage('❌ Error al enviar. Verifica tu conexión e intenta de nuevo.', 'error');
+                console.error('Error:', error);
+            } finally {
+                btnSubmit.disabled = false;
+                loading.classList.remove('active');
+            }
+        });
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+        }
+    </script>
+</body>
+</html>

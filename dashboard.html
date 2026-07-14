@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard VPN - Seguimiento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1e3a5f;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            max-width: 1000px;
+            margin: 0 auto 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .stat-card.total .number { color: #1e3a5f; }
+        .stat-card.respondido .number { color: #27ae60; }
+        .stat-card.pendiente .number { color: #e74c3c; }
+        .stat-card.vpn1 .number { color: #2980b9; }
+        .stat-card.vpn2 .number { color: #8e44ad; }
+        .stat-card.sinvpn .number { color: #f39c12; }
+
+        .progress-bar-container {
+            max-width: 1000px;
+            margin: 0 auto 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .progress-bar-container h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .filters {
+            max-width: 1000px;
+            margin: 0 auto 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: #1e3a5f;
+            background: #1e3a5f;
+            color: white;
+        }
+
+        .table-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-respondido {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-pendiente {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-vpn1 {
+            background: #d6eaf8;
+            color: #1b4f72;
+        }
+
+        .badge-vpn2 {
+            background: #e8daef;
+            color: #4a235a;
+        }
+
+        .badge-sinvpn {
+            background: #fdebd0;
+            color: #7e5109;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(30,58,95,0.4);
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .spinner-large {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1e3a5f;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .search-box {
+            max-width: 1000px;
+            margin: 0 auto 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #2d5986;
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-large"></div>
+    </div>
+
+    <div class="header">
+        <h1>📊 Dashboard VPN</h1>
+        <p>Seguimiento de respuestas de encuesta</p>
+    </div>
+
+    <div class="stats" id="stats">
+        <div class="stat-card total">
+            <div class="number" id="statTotal">-</div>
+            <div class="label">Total empleados</div>
+        </div>
+        <div class="stat-card respondido">
+            <div class="number" id="statRespondido">-</div>
+            <div class="label">Respondieron</div>
+        </div>
+        <div class="stat-card pendiente">
+            <div class="number" id="statPendiente">-</div>
+            <div class="label">Pendientes</div>
+        </div>
+        <div class="stat-card vpn1">
+            <div class="number" id="statVpn1">-</div>
+            <div class="label">Cisco AnyConnect</div>
+        </div>
+        <div class="stat-card vpn2">
+            <div class="number" id="statVpn2">-</div>
+            <div class="label">GlobalProtect</div>
+        </div>
+        <div class="stat-card sinvpn">
+            <div class="number" id="statSinVpn">-</div>
+            <div class="label">Sin VPN</div>
+        </div>
+    </div>
+
+    <div class="progress-bar-container">
+        <h3>Progreso de respuestas</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar por número de empleado o nombre...">
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" data-filter="todos">Todos</button>
+        <button class="filter-btn" data-filter="respondido">✅ Respondieron</button>
+        <button class="filter-btn" data-filter="pendiente">⏳ Pendientes</button>
+        <button class="filter-btn" data-filter="CISCO_ANYCONNECT">🔵 Cisco AnyConnect</button>
+        <button class="filter-btn" data-filter="GLOBALPROTECT">🟣 GlobalProtect</button>
+        <button class="filter-btn" data-filter="SIN_VPN">🟡 Sin VPN</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th># Empleado</th>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>VPN</th>
+                    <th>Fecha respuesta</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <button class="refresh-btn" onclick="loadData()" title="Actualizar datos">🔄</button>
+
+    <script>
+        // ⚠️ REEMPLAZA ESTA URL con la URL de tu Google Apps Script desplegado como Web App
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6qGW7Jz48gIR7_VveRRaDT2ByD1lJQLZ1ZbZLaK5rIJEB0KN0b2_PG2aD3x8INgw/exec';
+
+        let allData = [];
+        let currentFilter = 'todos';
+
+        // Cargar datos al inicio
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        async function loadData() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.remove('hidden');
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL + '?action=dashboard');
+                const data = await response.json();
+
+                allData = data.empleados; // Array con { empleado, status, vpn, fecha }
+                updateStats(data);
+                renderTable(allData);
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                // Datos demo para previsualización
+                loadDemoData();
+            } finally {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function loadDemoData() {
+            // Datos de ejemplo para ver cómo se verá
+            allData = [
+                { empleado: '60095235', nombre: 'MAURA PAOLA BAUTISTA PAREDES', status: 'respondido', vpn: 'CISCO_ANYCONNECT', fecha: '2026-07-13 14:30' },
+                { empleado: '60095206', nombre: 'EMILIO CORTES DAVID', status: 'respondido', vpn: 'GLOBALPROTECT', fecha: '2026-07-13 15:00' },
+                { empleado: '1214640', nombre: 'LUIS FERNANDO FLORES RIVERA', status: 'respondido', vpn: 'SIN_VPN', fecha: '2026-07-13 15:45' },
+                { empleado: '1210310', nombre: 'DIEGO ROJAS NAVA', status: 'pendiente', vpn: '-', fecha: '-' },
+                { empleado: '1204670', nombre: 'MAYRA JIMENEZ MALDONADO', status: 'pendiente', vpn: '-', fecha: '-' },
+                { empleado: '60094580', nombre: 'ANDREA BERENICE FLORES MEDINA', status: 'respondido', vpn: 'CISCO_ANYCONNECT', fecha: '2026-07-13 16:20' },
+                { empleado: '1199518', nombre: 'JOSUE GUTIERREZ OLIVARES', status: 'pendiente', vpn: '-', fecha: '-' },
+            ];
+
+            const demoStats = {
+                total: 7,
+                respondidos: 4,
+                pendientes: 3,
+                vpn1: 2,
+                vpn2: 1,
+                sinVpn: 1
+            };
+
+            updateStats(demoStats);
+            renderTable(allData);
+        }
+
+        function updateStats(data) {
+            const total = data.total || allData.length;
+            const respondidos = data.respondidos || allData.filter(e => e.status === 'respondido').length;
+            const pendientes = data.pendientes || total - respondidos;
+            const vpn1 = data.vpn1 || allData.filter(e => e.vpn === 'CISCO_ANYCONNECT').length;
+            const vpn2 = data.vpn2 || allData.filter(e => e.vpn === 'GLOBALPROTECT').length;
+            const sinVpn = data.sinVpn || allData.filter(e => e.vpn === 'SIN_VPN').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statRespondido').textContent = respondidos;
+            document.getElementById('statPendiente').textContent = pendientes;
+            document.getElementById('statVpn1').textContent = vpn1;
+            document.getElementById('statVpn2').textContent = vpn2;
+            document.getElementById('statSinVpn').textContent = sinVpn;
+
+            // Barra de progreso
+            const pct = total > 0 ? Math.round((respondidos / total) * 100) : 0;
+            const fill = document.getElementById('progressFill');
+            fill.style.width = pct + '%';
+            fill.textContent = pct + '%';
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(emp => {
+                const tr = document.createElement('tr');
+
+                const statusBadge = emp.status === 'respondido'
+                    ? '<span class="badge badge-respondido">✅ Respondió</span>'
+                    : '<span class="badge badge-pendiente">⏳ Pendiente</span>';
+
+                let vpnBadge = '-';
+                if (emp.vpn === 'CISCO_ANYCONNECT') vpnBadge = '<span class="badge badge-vpn1">Cisco AnyConnect</span>';
+                else if (emp.vpn === 'GLOBALPROTECT') vpnBadge = '<span class="badge badge-vpn2">GlobalProtect</span>';
+                else if (emp.vpn === 'SIN_VPN') vpnBadge = '<span class="badge badge-sinvpn">Sin VPN</span>';
+
+                tr.innerHTML = `
+                    <td><strong>${emp.empleado}</strong></td>
+                    <td>${emp.nombre || ''}</td>
+                    <td>${statusBadge}</td>
+                    <td>${vpnBadge}</td>
+                    <td>${emp.fecha}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Filtros
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                applyFilters();
+            });
+        });
+
+        // Búsqueda
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.trim().toLowerCase();
+            let filtered = allData;
+
+            // Filtro por tipo
+            if (currentFilter === 'respondido') {
+                filtered = filtered.filter(e => e.status === 'respondido');
+            } else if (currentFilter === 'pendiente') {
+                filtered = filtered.filter(e => e.status === 'pendiente');
+            } else if (currentFilter !== 'todos') {
+                filtered = filtered.filter(e => e.vpn === currentFilter);
+            }
+
+            // Filtro por búsqueda
+            if (search) {
+                filtered = filtered.filter(e => 
+                    e.empleado.toLowerCase().includes(search) ||
+                    (e.nombre && e.nombre.toLowerCase().includes(search))
+                );
+            }
+
+            renderTable(filtered);
+        }
+    </script>
+</body>
+</html>
