@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta VPN - Confirmación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5986 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .icon-success {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            animation: pop 0.5s ease;
+        }
+
+        .icon-warning {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            color: #1e3a5f;
+            margin-bottom: 10px;
+            font-size: 1.6rem;
+        }
+
+        h1.warning {
+            color: #856404;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .resumen {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .resumen-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .resumen-row:last-child {
+            border-bottom: none;
+        }
+
+        .resumen-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .resumen-value {
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.95rem;
+        }
+
+        .badge-vpn {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-cisco {
+            background: #d6eaf8;
+            color: #1b4f72;
+        }
+
+        .badge-global {
+            background: #e8daef;
+            color: #4a235a;
+        }
+
+        .badge-sinvpn {
+            background: #fdebd0;
+            color: #7e5109;
+        }
+
+        .msg-gracias {
+            color: #27ae60;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .msg-duplicado {
+            color: #856404;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .btn-cerrar {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #1e3a5f, #2d5986);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-cerrar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 58, 95, 0.4);
+        }
+
+        .loading {
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2d5986;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Procesando tu respuesta...</p>
+        </div>
+
+        <div id="resultado" style="display: none;"></div>
+    </div>
+
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6qGW7Jz48gIR7_VveRRaDT2ByD1lJQLZ1ZbZLaK5rIJEB0KN0b2_PG2aD3x8INgw/exec';
+
+        const params = new URLSearchParams(window.location.search);
+        const empleado = params.get('empleado');
+        const vpn = params.get('vpn');
+
+        const vpnNombres = {
+            'CISCO_ANYCONNECT': 'Cisco AnyConnect',
+            'GLOBALPROTECT': 'GlobalProtect',
+            'SIN_VPN': 'No tengo VPN'
+        };
+
+        const vpnBadgeClass = {
+            'CISCO_ANYCONNECT': 'badge-cisco',
+            'GLOBALPROTECT': 'badge-global',
+            'SIN_VPN': 'badge-sinvpn'
+        };
+
+        async function procesar() {
+            const loadingEl = document.getElementById('loading');
+            const resultadoEl = document.getElementById('resultado');
+
+            if (!empleado || !vpn) {
+                loadingEl.style.display = 'none';
+                resultadoEl.style.display = 'block';
+                resultadoEl.innerHTML = `
+                    <div class="icon-warning">❌</div>
+                    <h1>Error</h1>
+                    <p class="subtitle">No se recibieron los datos correctamente.</p>
+                    <a href="formulario.html" class="btn-cerrar">Volver al formulario</a>
+                `;
+                return;
+            }
+
+            try {
+                // Verificar si ya respondió
+                const checkResponse = await fetch(APPS_SCRIPT_URL + '?action=check&empleado=' + encodeURIComponent(empleado));
+                const checkData = await checkResponse.json();
+
+                if (checkData.yaRespondio) {
+                    // Ya había respondido
+                    loadingEl.style.display = 'none';
+                    resultadoEl.style.display = 'block';
+                    resultadoEl.innerHTML = `
+                        <div class="icon-warning">⚠️</div>
+                        <h1 class="warning">Ya habías respondido</h1>
+                        <p class="subtitle">Tu encuesta ya fue registrada anteriormente.</p>
+                        <div class="resumen">
+                            <div class="resumen-row">
+                                <span class="resumen-label">Número de empleado</span>
+                                <span class="resumen-value">${empleado}</span>
+                            </div>
+                            <div class="resumen-row">
+                                <span class="resumen-label">VPN registrada</span>
+                                <span class="badge-vpn ${vpnBadgeClass[checkData.vpn] || ''}">${vpnNombres[checkData.vpn] || checkData.vpn}</span>
+                            </div>
+                        </div>
+                        <p class="msg-duplicado">No es necesario responder de nuevo.</p>
+                        <a href="formulario.html" class="btn-cerrar">Volver</a>
+                    `;
+                    return;
+                }
+
+                // Guardar respuesta
+                const guardarResponse = await fetch(APPS_SCRIPT_URL + '?action=guardar&empleado=' + encodeURIComponent(empleado) + '&vpn=' + encodeURIComponent(vpn) + '&timestamp=' + encodeURIComponent(new Date().toISOString()));
+                await guardarResponse.json();
+
+                // Mostrar confirmación
+                loadingEl.style.display = 'none';
+                resultadoEl.style.display = 'block';
+                resultadoEl.innerHTML = `
+                    <div class="icon-success">✅</div>
+                    <h1>¡Encuesta respondida!</h1>
+                    <p class="subtitle">Tu respuesta ha sido registrada correctamente.</p>
+                    <div class="resumen">
+                        <div class="resumen-row">
+                            <span class="resumen-label">Número de empleado</span>
+                            <span class="resumen-value">${empleado}</span>
+                        </div>
+                        <div class="resumen-row">
+                            <span class="resumen-label">VPN seleccionada</span>
+                            <span class="badge-vpn ${vpnBadgeClass[vpn] || ''}">${vpnNombres[vpn] || vpn}</span>
+                        </div>
+                    </div>
+                    <p class="msg-gracias">¡Gracias por tu participación!</p>
+                    <a href="formulario.html" class="btn-cerrar">Cerrar</a>
+                `;
+
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                resultadoEl.style.display = 'block';
+                resultadoEl.innerHTML = `
+                    <div class="icon-warning">❌</div>
+                    <h1>Error de conexión</h1>
+                    <p class="subtitle">No se pudo procesar tu respuesta. Intenta de nuevo.</p>
+                    <a href="formulario.html" class="btn-cerrar">Volver al formulario</a>
+                `;
+            }
+        }
+
+        procesar();
+    </script>
+</body>
+</html>

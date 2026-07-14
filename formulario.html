@@ -288,13 +288,6 @@
             </div>
 
             <button type="submit" class="btn-submit" id="btnSubmit">Enviar respuesta</button>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Enviando...</p>
-            </div>
-
-            <div class="message" id="message"></div>
         </form>
     </div>
 
@@ -323,42 +316,12 @@
                 return;
             }
 
-            // Deshabilitar botón y mostrar loading
-            btnSubmit.disabled = true;
-            loading.classList.add('active');
-            message.className = 'message';
-            message.style.display = 'none';
-
-            try {
-                // Primero verificar si ya respondió (vía GET)
-                const checkResponse = await fetch(APPS_SCRIPT_URL + '?action=check&empleado=' + encodeURIComponent(empleado));
-                const checkData = await checkResponse.json();
-
-                if (checkData.yaRespondio) {
-                    showMessage('⚠️ Ya habías respondido esta encuesta anteriormente (respondiste: ' + checkData.vpn + '). Tu respuesta ya está registrada.', 'warning');
-                    return;
-                }
-
-                // Si no ha respondido, enviar respuesta usando imagen (evita CORS)
-                const img = new Image();
-                const params = new URLSearchParams({
-                    action: 'guardar',
-                    empleado: empleado,
-                    vpn: vpnSeleccion.value,
-                    timestamp: new Date().toISOString()
-                });
-                img.src = APPS_SCRIPT_URL + '?' + params.toString();
-
-                showMessage('✅ ¡Encuesta respondida exitosamente! Gracias por tu participación.', 'success');
-                form.reset();
-
-            } catch (error) {
-                showMessage('❌ Error al enviar. Verifica tu conexión e intenta de nuevo.', 'error');
-                console.error('Error:', error);
-            } finally {
-                btnSubmit.disabled = false;
-                loading.classList.remove('active');
-            }
+            // Redirigir a página de confirmación que procesa todo
+            const params = new URLSearchParams({
+                empleado: empleado,
+                vpn: vpnSeleccion.value
+            });
+            window.location.href = 'confirmacion.html?' + params.toString();
         });
 
         function showMessage(text, type) {
