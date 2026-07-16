@@ -224,8 +224,8 @@ function serveDashboardData() {
   const total = empleados.length;
   const activos = empleadosData.filter(e => e.estatus === 'Activo').length;
   const bajas = empleadosData.filter(e => e.estatus === 'Baja').length;
-  const respondidos = empleadosData.filter(e => e.status === 'respondido').length;
-  const pendientes = total - respondidos;
+  const respondidos = empleadosData.filter(e => e.status === 'respondido' && e.estatus === 'Activo').length;
+  const pendientes = empleadosData.filter(e => e.status === 'pendiente' && e.estatus === 'Activo').length;
   const vpn1 = empleadosData.filter(e => e.vpn === 'CISCO_ANYCONNECT').length;
   const vpn2 = empleadosData.filter(e => e.vpn === 'GLOBALPROTECT').length;
   const ambas = empleadosData.filter(e => e.vpn === 'AMBAS').length;

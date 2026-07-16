@@ -366,7 +366,6 @@
                 <tr>
                     <th># Empleado</th>
                     <th>Nombre</th>
-                    <th>Estatus</th>
                     <th>Estado</th>
                     <th>VPN</th>
                     <th>Fecha respuesta</th>
@@ -425,7 +424,7 @@
                 total: 7,
                 activos: 6,
                 bajas: 1,
-                respondidos: 4,
+                respondidos: 3,
                 pendientes: 3,
                 vpn1: 2,
                 vpn2: 1,
@@ -440,8 +439,8 @@
             const total = data.total || allData.length;
             const activos = data.activos || allData.filter(e => e.estatus !== 'Baja').length;
             const bajas = data.bajas || allData.filter(e => e.estatus === 'Baja').length;
-            const respondidos = data.respondidos || allData.filter(e => e.status === 'respondido').length;
-            const pendientes = data.pendientes || total - respondidos;
+            const respondidos = data.respondidos || allData.filter(e => e.status === 'respondido' && e.estatus !== 'Baja').length;
+            const pendientes = data.pendientes || allData.filter(e => e.status === 'pendiente' && e.estatus !== 'Baja').length;
             const vpn1 = data.vpn1 || allData.filter(e => e.vpn === 'CISCO_ANYCONNECT').length;
             const vpn2 = data.vpn2 || allData.filter(e => e.vpn === 'GLOBALPROTECT').length;
             const ambas = data.ambas || allData.filter(e => e.vpn === 'AMBAS').length;
@@ -457,8 +456,8 @@
             document.getElementById('statAmbas').textContent = ambas;
             document.getElementById('statSinVpn').textContent = sinVpn;
 
-            // Barra de progreso
-            const pct = total > 0 ? Math.round((respondidos / total) * 100) : 0;
+            // Barra de progreso (sobre activos, no sobre total)
+            const pct = activos > 0 ? Math.round((respondidos / activos) * 100) : 0;
             const fill = document.getElementById('progressFill');
             fill.style.width = pct + '%';
             fill.textContent = pct + '%';
@@ -472,13 +471,11 @@
                 const tr = document.createElement('tr');
                 if (emp.estatus === 'Baja') tr.classList.add('row-baja');
 
-                const estatusBadge = emp.estatus === 'Baja'
+                const statusBadge = emp.estatus === 'Baja'
                     ? '<span class="badge badge-baja">⚫ Baja</span>'
-                    : '<span class="badge badge-activo">🟢 Activo</span>';
-
-                const statusBadge = emp.status === 'respondido'
-                    ? '<span class="badge badge-respondido">✅ Respondió</span>'
-                    : '<span class="badge badge-pendiente">⏳ Pendiente</span>';
+                    : emp.status === 'respondido'
+                        ? '<span class="badge badge-respondido">✅ Respondió</span>'
+                        : '<span class="badge badge-pendiente">⏳ Pendiente</span>';
 
                 let vpnBadge = '-';
                 if (emp.estatus === 'Baja') {
@@ -491,7 +488,6 @@
                 tr.innerHTML = `
                     <td><strong>${emp.empleado}</strong></td>
                     <td>${emp.nombre || ''}</td>
-                    <td>${estatusBadge}</td>
                     <td>${statusBadge}</td>
                     <td>${vpnBadge}</td>
                     <td>${emp.fecha}</td>
