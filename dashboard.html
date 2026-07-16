@@ -519,9 +519,9 @@
             } else if (currentFilter === 'bajas') {
                 filtered = filtered.filter(e => e.estatus === 'Baja');
             } else if (currentFilter === 'respondido') {
-                filtered = filtered.filter(e => e.status === 'respondido');
+                filtered = filtered.filter(e => e.status === 'respondido' && e.estatus !== 'Baja');
             } else if (currentFilter === 'pendiente') {
-                filtered = filtered.filter(e => e.status === 'pendiente');
+                filtered = filtered.filter(e => e.status === 'pendiente' && e.estatus !== 'Baja');
             } else if (currentFilter !== 'todos') {
                 filtered = filtered.filter(e => e.vpn === currentFilter);
             }
