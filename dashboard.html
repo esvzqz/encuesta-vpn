@@ -61,6 +61,8 @@
         }
 
         .stat-card.total .number { color: #1e3a5f; }
+        .stat-card.activos .number { color: #27ae60; }
+        .stat-card.bajas .number { color: #95a5a6; }
         .stat-card.respondido .number { color: #27ae60; }
         .stat-card.pendiente .number { color: #e74c3c; }
         .stat-card.vpn1 .number { color: #2980b9; }
@@ -198,6 +200,21 @@
             color: #7e5109;
         }
 
+        .badge-baja {
+            background: #d5d8dc;
+            color: #566573;
+        }
+
+        .badge-activo {
+            background: #d4efdf;
+            color: #1e8449;
+        }
+
+        tr.row-baja {
+            opacity: 0.7;
+            background: #f9f9f9;
+        }
+
         .refresh-btn {
             position: fixed;
             bottom: 30px;
@@ -286,6 +303,14 @@
             <div class="number" id="statTotal">-</div>
             <div class="label">Total empleados</div>
         </div>
+        <div class="stat-card activos">
+            <div class="number" id="statActivos">-</div>
+            <div class="label">Activos</div>
+        </div>
+        <div class="stat-card bajas">
+            <div class="number" id="statBajas">-</div>
+            <div class="label">Dados de baja</div>
+        </div>
         <div class="stat-card respondido">
             <div class="number" id="statRespondido">-</div>
             <div class="label">Respondieron</div>
@@ -325,6 +350,8 @@
 
     <div class="filters">
         <button class="filter-btn active" data-filter="todos">Todos</button>
+        <button class="filter-btn" data-filter="activos">🟢 Activos</button>
+        <button class="filter-btn" data-filter="bajas">⚫ Dados de baja</button>
         <button class="filter-btn" data-filter="respondido">✅ Respondieron</button>
         <button class="filter-btn" data-filter="pendiente">⏳ Pendientes</button>
         <button class="filter-btn" data-filter="CISCO_ANYCONNECT">🔵 Cisco AnyConnect</button>
@@ -339,6 +366,7 @@
                 <tr>
                     <th># Empleado</th>
                     <th>Nombre</th>
+                    <th>Estatus</th>
                     <th>Estado</th>
                     <th>VPN</th>
                     <th>Fecha respuesta</th>
@@ -384,17 +412,19 @@
         function loadDemoData() {
             // Datos de ejemplo para ver cómo se verá
             allData = [
-                { empleado: '60095235', nombre: 'MAURA PAOLA BAUTISTA PAREDES', status: 'respondido', vpn: 'CISCO_ANYCONNECT', fecha: '2026-07-13 14:30' },
-                { empleado: '60095206', nombre: 'EMILIO CORTES DAVID', status: 'respondido', vpn: 'GLOBALPROTECT', fecha: '2026-07-13 15:00' },
-                { empleado: '1214640', nombre: 'LUIS FERNANDO FLORES RIVERA', status: 'respondido', vpn: 'SIN_VPN', fecha: '2026-07-13 15:45' },
-                { empleado: '1210310', nombre: 'DIEGO ROJAS NAVA', status: 'pendiente', vpn: '-', fecha: '-' },
-                { empleado: '1204670', nombre: 'MAYRA JIMENEZ MALDONADO', status: 'pendiente', vpn: '-', fecha: '-' },
-                { empleado: '60094580', nombre: 'ANDREA BERENICE FLORES MEDINA', status: 'respondido', vpn: 'CISCO_ANYCONNECT', fecha: '2026-07-13 16:20' },
-                { empleado: '1199518', nombre: 'JOSUE GUTIERREZ OLIVARES', status: 'pendiente', vpn: '-', fecha: '-' },
+                { empleado: '60095235', nombre: 'MAURA PAOLA BAUTISTA PAREDES', estatus: 'Activo', status: 'respondido', vpn: 'CISCO_ANYCONNECT', fecha: '2026-07-13 14:30' },
+                { empleado: '60095206', nombre: 'EMILIO CORTES DAVID', estatus: 'Activo', status: 'respondido', vpn: 'GLOBALPROTECT', fecha: '2026-07-13 15:00' },
+                { empleado: '1214640', nombre: 'LUIS FERNANDO FLORES RIVERA', estatus: 'Activo', status: 'respondido', vpn: 'SIN_VPN', fecha: '2026-07-13 15:45' },
+                { empleado: '1210310', nombre: 'DIEGO ROJAS NAVA', estatus: 'Activo', status: 'pendiente', vpn: '-', fecha: '-' },
+                { empleado: '1204670', nombre: 'MAYRA JIMENEZ MALDONADO', estatus: 'Activo', status: 'pendiente', vpn: '-', fecha: '-' },
+                { empleado: '60094580', nombre: 'ANDREA BERENICE FLORES MEDINA', estatus: 'Baja', status: 'respondido', vpn: 'CISCO_ANYCONNECT', fecha: '2026-07-13 16:20' },
+                { empleado: '1199518', nombre: 'JOSUE GUTIERREZ OLIVARES', estatus: 'Activo', status: 'pendiente', vpn: '-', fecha: '-' },
             ];
 
             const demoStats = {
                 total: 7,
+                activos: 6,
+                bajas: 1,
                 respondidos: 4,
                 pendientes: 3,
                 vpn1: 2,
@@ -408,6 +438,8 @@
 
         function updateStats(data) {
             const total = data.total || allData.length;
+            const activos = data.activos || allData.filter(e => e.estatus !== 'Baja').length;
+            const bajas = data.bajas || allData.filter(e => e.estatus === 'Baja').length;
             const respondidos = data.respondidos || allData.filter(e => e.status === 'respondido').length;
             const pendientes = data.pendientes || total - respondidos;
             const vpn1 = data.vpn1 || allData.filter(e => e.vpn === 'CISCO_ANYCONNECT').length;
@@ -416,6 +448,8 @@
             const sinVpn = data.sinVpn || allData.filter(e => e.vpn === 'SIN_VPN').length;
 
             document.getElementById('statTotal').textContent = total;
+            document.getElementById('statActivos').textContent = activos;
+            document.getElementById('statBajas').textContent = bajas;
             document.getElementById('statRespondido').textContent = respondidos;
             document.getElementById('statPendiente').textContent = pendientes;
             document.getElementById('statVpn1').textContent = vpn1;
@@ -436,6 +470,11 @@
 
             data.forEach(emp => {
                 const tr = document.createElement('tr');
+                if (emp.estatus === 'Baja') tr.classList.add('row-baja');
+
+                const estatusBadge = emp.estatus === 'Baja'
+                    ? '<span class="badge badge-baja">⚫ Baja</span>'
+                    : '<span class="badge badge-activo">🟢 Activo</span>';
 
                 const statusBadge = emp.status === 'respondido'
                     ? '<span class="badge badge-respondido">✅ Respondió</span>'
@@ -450,6 +489,7 @@
                 tr.innerHTML = `
                     <td><strong>${emp.empleado}</strong></td>
                     <td>${emp.nombre || ''}</td>
+                    <td>${estatusBadge}</td>
                     <td>${statusBadge}</td>
                     <td>${vpnBadge}</td>
                     <td>${emp.fecha}</td>
@@ -476,7 +516,11 @@
             let filtered = allData;
 
             // Filtro por tipo
-            if (currentFilter === 'respondido') {
+            if (currentFilter === 'activos') {
+                filtered = filtered.filter(e => e.estatus !== 'Baja');
+            } else if (currentFilter === 'bajas') {
+                filtered = filtered.filter(e => e.estatus === 'Baja');
+            } else if (currentFilter === 'respondido') {
                 filtered = filtered.filter(e => e.status === 'respondido');
             } else if (currentFilter === 'pendiente') {
                 filtered = filtered.filter(e => e.status === 'pendiente');

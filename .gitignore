@@ -1,4 +1,2 @@
-# Archivos sensibles - no subir
-empleados_lista.csv
-apps-script.js
-INSTRUCCIONES.md
+# Archivos temporales
+.DS_Store
