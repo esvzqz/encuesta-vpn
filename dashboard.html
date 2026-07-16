@@ -481,7 +481,9 @@
                     : '<span class="badge badge-pendiente">⏳ Pendiente</span>';
 
                 let vpnBadge = '-';
-                if (emp.vpn === 'CISCO_ANYCONNECT') vpnBadge = '<span class="badge badge-vpn1">Cisco AnyConnect</span>';
+                if (emp.estatus === 'Baja') {
+                    vpnBadge = '<span class="badge badge-baja">⚫ Dado de baja</span>';
+                } else if (emp.vpn === 'CISCO_ANYCONNECT') vpnBadge = '<span class="badge badge-vpn1">Cisco AnyConnect</span>';
                 else if (emp.vpn === 'GLOBALPROTECT') vpnBadge = '<span class="badge badge-vpn2">GlobalProtect</span>';
                 else if (emp.vpn === 'AMBAS') vpnBadge = '<span class="badge badge-ambas">Ambas</span>';
                 else if (emp.vpn === 'SIN_VPN') vpnBadge = '<span class="badge badge-sinvpn">Sin VPN</span>';
